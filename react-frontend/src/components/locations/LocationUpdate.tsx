@@ -63,6 +63,7 @@ export const LocationUpdate = () => {
 								id="street"
 								label="Street"
 								variant="outlined"
+								defaultValue={locationDetails?.street}
 								fullWidth
 								sx={{ mb: 2 }}
 								onChange={(event) => setLocation({ ...location, street: event.target.value })}
