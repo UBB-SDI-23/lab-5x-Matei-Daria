@@ -1,7 +1,9 @@
-import { Box, AppBar, Toolbar, IconButton, Typography, Button } from "@mui/material";
-import { Link, useLocation } from "react-router-dom";
+import {AppBar, Box, Button, IconButton, Toolbar, Typography} from "@mui/material";
+import {Link, useLocation} from "react-router-dom";
 import EventIcon from '@mui/icons-material/Event';
 import PlaceIcon from '@mui/icons-material/Place';
+import BadgeIcon from '@mui/icons-material/Badge';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 export const AppMenu = () => {
 	const location = useLocation();
@@ -32,6 +34,24 @@ export const AppMenu = () => {
 						sx={{ mr: 5 }}
 						startIcon={<PlaceIcon />}>
 						Locations
+					</Button>
+					<Button
+						variant={path.startsWith("/events") ? "outlined" : "text"}
+						to="/events"
+						component={Link}
+						color="inherit"
+						sx={{ mr: 5 }}
+						startIcon={<CalendarMonthIcon />}>
+						Events
+					</Button>
+					<Button
+						variant={path.startsWith("/employees") ? "outlined" : "text"}
+						to="/employees"
+						component={Link}
+						color="inherit"
+						sx={{ mr: 5 }}
+						startIcon={<BadgeIcon />}>
+						Employees
 					</Button>
 				</Toolbar>
 			</AppBar>

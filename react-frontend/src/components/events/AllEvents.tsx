@@ -1,4 +1,5 @@
 import {
+    Button,
     CircularProgress,
     Container,
     IconButton,
@@ -9,7 +10,6 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    TextField,
     Tooltip,
 } from "@mui/material";
 import React, {useEffect, useState} from "react";
@@ -18,17 +18,15 @@ import ReadMoreIcon from "@mui/icons-material/ReadMore";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import AddIcon from "@mui/icons-material/Add";
-import SearchIcon from '@mui/icons-material/Search';
-import {Location} from "../../models/Location";
+import {Event} from "../../models/Event";
+import {Location} from "../../models/Location"
 import {BACKEND_API_URL, ITEMS_PER_PAGE} from "../../constants";
 import axios from "axios";
-import {LocationFilterByCity} from "./LocationFilterByCity";
-import SortTwoToneIcon from '@mui/icons-material/SortTwoTone';
 
-export const AllLocations = () => {
+export const AllEvents = () => {
     const [loading, setLoading] = useState(false);
-    const [locations, setLocations] = useState<Location[]>([]);
-    const [cityToFilter, setCityToFilter] = useState("");
+    const [events, setEvents] = useState<Event[]>([]);
+
     const [currentPage, setCurrentPage] = useState(1);
     const [numberOfItems, setNumberOfItems] = useState(ITEMS_PER_PAGE);
     const totalPages = Math.ceil(numberOfItems / ITEMS_PER_PAGE);
@@ -45,26 +43,13 @@ export const AllLocations = () => {
         }
     }
 
-    const sortLocations = (sortingAttr: string) => {
-        const sorted = [...locations].sort((a: Location, b: Location) => {
-
-            // @ts-ignore
-            if (a[sortingAttr] < b[sortingAttr])
-                return -1;
-            return 1;
-
-        })
-        setLocations(sorted);
-    }
-
     useEffect(() => {
         setLoading(true);
-        axios.get(`${BACKEND_API_URL}/locations?page=${currentPage}`)
+        axios.get(`${BACKEND_API_URL}/events?page=${currentPage}`)
             .then((response) => response.data)
             .then((data) => {
-                setLocations(data.results);
+                setEvents(data.results);
                 setNumberOfItems(data.count);
-                console.log(data.results);
                 setLoading(false);
             });
     }, []);
@@ -73,10 +58,10 @@ export const AllLocations = () => {
         setCurrentPage(newPage);
 
         setLoading(true);
-        fetch(`${BACKEND_API_URL}/locations?page=${newPage}`)
+        fetch(`${BACKEND_API_URL}/events?page=${newPage}`)
             .then((response) => response.json())
             .then((data) => {
-                setLocations(data.results);
+                setEvents(data.results);
                 setLoading(false);
             });
     };
@@ -92,7 +77,7 @@ export const AllLocations = () => {
 
 
     return <Container>
-        {!loading && locations.length > 0 &&
+        {!loading && events.length > 0 &&
             <div style={{width: "1200px"}}>
                 <span>Pages: </span>
                 {currentPage > 1 && (
@@ -142,117 +127,83 @@ export const AllLocations = () => {
                 )}
             </div>}
 
-        <h1>All locations</h1>
+        <h1>All events</h1>
 
         {loading && <CircularProgress/>}
-        {!loading && locations.length === 0 && <p>No locations found</p>}
-        {!loading && locations.length > 0 && <Container sx={{position: "absolute", left: 930, top: 140}}>
-            <form onSubmit={LocationFilterByCity}>
-                <TextField
-                    id="filter"
-                    label="Filter by city"
-                    variant="outlined"
-                    sx={{mb: 2}}
-                    onChange={(event) => setCityToFilter(event.target.value)}
-                />
-                <IconButton component={Link} sx={{mr: 3}} to={`/locations/in-city/${cityToFilter}`}>
-                    <Tooltip title="Filter by city" arrow>
-                        <SearchIcon color="inherit"/>
-                    </Tooltip>
-                </IconButton>
-            </form>
-        </Container>}
-        {!loading && <IconButton component={Link} sx={{mr: 3}} to={`/locations/add`}>
-            <Tooltip title="Add a new location" arrow>
+        {!loading && events.length === 0 && <p>No events found</p>}
+        {!loading && <IconButton component={Link} sx={{mr: 3}} to={`/events/add`}>
+            <Tooltip title="Add a new event" arrow>
                 <AddIcon color="inherit"/>
             </Tooltip>
         </IconButton>}
-        {!loading && locations.length > 0 && <TableContainer component={Paper}>
+        {!loading && <Button
+            variant="contained"
+            component={Link}
+            sx={{mr: 3, position: "absolute", top: 170, left: 850, background: "#571236", fontSize: 10}}
+            to={`/events/by-avg-salary-of-participants`}>
+            <p>View <i>Event by average salary of participants</i> stat</p>
+        </Button>}
+        {!loading && events.length > 0 && <TableContainer component={Paper}>
             <Table sx={{minWidth: 650}} aria-label="simple table">
                 <TableHead>
                     <TableRow>
                         <TableCell align="left">#</TableCell>
                         <TableCell align="left">
-                            Street
-                            <IconButton onClick={() => {
-                                sortLocations("street");
-                            }}>
-                                <Tooltip title="Sort by street" arrow>
-                                    <SortTwoToneIcon color="inherit"/>
-                                </Tooltip>
-                            </IconButton>
-                        </TableCell>
-                        <TableCell align="left">
-                            Number
-                            <IconButton onClick={() => {
-                                sortLocations("number");
-                            }}>
-                                <Tooltip title="Sort by number" arrow>
-                                    <SortTwoToneIcon color="inherit"/>
-                                </Tooltip>
-                            </IconButton>
-                        </TableCell>
-                        <TableCell align="left">
-                            City
-                            <IconButton onClick={() => {
-                                sortLocations("city");
-                            }}>
-                                <Tooltip title="Sort by city" arrow>
-                                    <SortTwoToneIcon color="inherit"/>
-                                </Tooltip>
-                            </IconButton>
-                        </TableCell>
-                        <TableCell align="left">
-                            Building name
-                            <IconButton onClick={() => {
-                                sortLocations("building_name");
-                            }}>
-                                <Tooltip title="Sort by building name" arrow>
-                                    <SortTwoToneIcon color="inherit"/>
-                                </Tooltip>
-                            </IconButton>
+                            Name
                         </TableCell>
                         <TableCell align="left">
                             Details
-                            <IconButton onClick={() => {
-                                sortLocations("details");
-                            }}>
-                                <Tooltip title="Sort by details" arrow>
-                                    <SortTwoToneIcon color="inherit"/>
-                                </Tooltip>
-                            </IconButton>
                         </TableCell>
-                        <TableCell align="left">Number of events</TableCell>
+                        <TableCell align="left">
+                            Date
+                        </TableCell>
+                        <TableCell align="left">
+                            Importance
+                        </TableCell>
+                        <TableCell align="left">
+                            Business trip
+                        </TableCell>
+                        <TableCell align="left">
+                            Location
+                        </TableCell>
+                        <TableCell align="left">
+                            Number of employees assigned
+                        </TableCell>
                         <TableCell align="center">Operations</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {locations.map((location, index) => <TableRow key={location.id}>
+                    {events.map((event, index) => <TableRow key={event.id}>
                         <TableCell component="th" scope="row">
                             {index + 1}
                         </TableCell>
-                        <TableCell align="left">{location.street}</TableCell>
-                        <TableCell align="left">{location.number}</TableCell>
-                        <TableCell align="left">{location.city}</TableCell>
-                        <TableCell align="left">{location.building_name}</TableCell>
-                        <TableCell align="left">{location.details}</TableCell>
-                        <TableCell align="left">{location.events == undefined ? 0 : location.events.length}</TableCell>
+                        <TableCell align="left">{event.name}</TableCell>
+                        <TableCell align="left">{event.details}</TableCell>
+                        <TableCell align="left">{event.date}</TableCell>
+                        <TableCell align="left">{event.importance}</TableCell>
+                        <TableCell align="left">{event.business_trip ? "true" : "false"}</TableCell>
+                        <TableCell align="left">
+                            {
+                                event.location==undefined ? "" : (event.location.street + ", " + event.location.number + ", "  + event.location.city)
+                            }
+                        </TableCell>
+                        <TableCell align="left">{event.employees == undefined ? 0 : event.employees.length}</TableCell>
                         <TableCell align="right">
                             <IconButton
                                 component={Link}
                                 sx={{mr: 3}}
-                                to={`/locations/${location.id}/details`}>
-                                <Tooltip title="View location details" arrow>
+                                to={`/events/${event.id}/details`}>
+                                <Tooltip title="View event details" arrow>
                                     <ReadMoreIcon color="primary"/>
                                 </Tooltip>
                             </IconButton>
 
-                            <IconButton component={Link} sx={{mr: 3}} to={`/locations/${location.id}/edit`}>
+                            <IconButton component={Link} sx={{mr: 3}} to={`/events/${event.id}/edit`}>
                                 <EditIcon/>
                             </IconButton>
 
                             <IconButton component={Link} sx={{mr: 3}}
-                                        to={`/locations/${location.id}/delete`}>
+                                        to={`/events/${event.id}/delete`}>
                                 <DeleteForeverIcon sx={{color: "red"}}/>
                             </IconButton>
                         </TableCell>

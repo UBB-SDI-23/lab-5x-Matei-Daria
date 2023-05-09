@@ -17,7 +17,8 @@ export const LocationAdd = () => {
         number: "",
         city: "",
         building_name: "",
-        details: ""
+        details: "",
+		events: []
     });
 
 	const addLocation = async (event: { preventDefault: () => void }) => {
@@ -29,6 +30,19 @@ export const LocationAdd = () => {
 			console.log(error);
 		}
 	};
+
+	const [numberError, setNumberError] = useState('');
+	function handleNumberChange(event: any) {
+		const input = event.target.value;
+		const regex =  /^[a-zA-Z0-9]+$/;
+		if (regex.test(input)) {
+			setNumberError('');
+			setLocation({ ...location, number: input});
+		}
+		else {
+			setNumberError("Address number cannot have spaces.");
+		}
+	}
 
 	return (
 		<Container>
@@ -52,7 +66,9 @@ export const LocationAdd = () => {
 							variant="outlined"
 							fullWidth
 							sx={{ mb: 2 }}
-							onChange={(event) => setLocation({ ...location, number: event.target.value })}
+							onChange={handleNumberChange}
+                            error={!!numberError}
+                            helperText={numberError}
 						/>
 						<TextField
 							id="city"
@@ -64,7 +80,7 @@ export const LocationAdd = () => {
 						/>
 						<TextField
 							id="building_name"
-							label="Building_Name"
+							label="Building name"
 							variant="outlined"
 							fullWidth
 							sx={{ mb: 2 }}

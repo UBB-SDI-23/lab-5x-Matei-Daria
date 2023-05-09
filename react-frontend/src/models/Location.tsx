@@ -1,3 +1,5 @@
+import {Event} from "./Event";
+
 export interface Location {
     id?: number;
     street: string;
@@ -5,4 +7,5 @@ export interface Location {
     city: string;
     building_name: string;
     details: string;
+    events?: Event[];
 }

@@ -1,4 +1,5 @@
 import {
+    Button,
     CircularProgress,
     Container,
     IconButton,
@@ -19,17 +20,16 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from '@mui/icons-material/Search';
-import {Location} from "../../models/Location";
+import {Employee} from "../../models/Employee";
 import {BACKEND_API_URL, ITEMS_PER_PAGE} from "../../constants";
 import axios from "axios";
-import {LocationFilterByCity} from "./LocationFilterByCity";
-import SortTwoToneIcon from '@mui/icons-material/SortTwoTone';
+import {EmployeeFilterBySalary} from "./EmployeeFilterBySalary";
 
-export const AllLocations = () => {
+export const AllEmployees = () => {
     const [loading, setLoading] = useState(false);
-    const [locations, setLocations] = useState<Location[]>([]);
-    const [cityToFilter, setCityToFilter] = useState("");
+    const [employees, setEmployees] = useState<Employee[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
+    const [salaryToFilter, setSalaryToFilter] = useState(0);
     const [numberOfItems, setNumberOfItems] = useState(ITEMS_PER_PAGE);
     const totalPages = Math.ceil(numberOfItems / ITEMS_PER_PAGE);
 
@@ -45,26 +45,13 @@ export const AllLocations = () => {
         }
     }
 
-    const sortLocations = (sortingAttr: string) => {
-        const sorted = [...locations].sort((a: Location, b: Location) => {
-
-            // @ts-ignore
-            if (a[sortingAttr] < b[sortingAttr])
-                return -1;
-            return 1;
-
-        })
-        setLocations(sorted);
-    }
-
     useEffect(() => {
         setLoading(true);
-        axios.get(`${BACKEND_API_URL}/locations?page=${currentPage}`)
+        axios.get(`${BACKEND_API_URL}/employees?page=${currentPage}`)
             .then((response) => response.data)
             .then((data) => {
-                setLocations(data.results);
+                setEmployees(data.results);
                 setNumberOfItems(data.count);
-                console.log(data.results);
                 setLoading(false);
             });
     }, []);
@@ -73,10 +60,10 @@ export const AllLocations = () => {
         setCurrentPage(newPage);
 
         setLoading(true);
-        fetch(`${BACKEND_API_URL}/locations?page=${newPage}`)
+        fetch(`${BACKEND_API_URL}/employees?page=${newPage}`)
             .then((response) => response.json())
             .then((data) => {
-                setLocations(data.results);
+                setEmployees(data.results);
                 setLoading(false);
             });
     };
@@ -90,9 +77,8 @@ export const AllLocations = () => {
         pageNumbers.push(i);
     }
 
-
     return <Container>
-        {!loading && locations.length > 0 &&
+        {!loading && employees.length > 0 &&
             <div style={{width: "1200px"}}>
                 <span>Pages: </span>
                 {currentPage > 1 && (
@@ -102,9 +88,8 @@ export const AllLocations = () => {
                 )}
                 {pageNumbers[0] > 1 && (
                     <>
-                        <button style={styles.pagination} onClick={() => handlePageChange(1)}>1
-                        </button>
-                        {pageNumbers[0] > 2 && <span style={styles.pagination}>...</span>}
+                        <button style={styles.pagination} onClick={() => handlePageChange(1)}>1</button>
+                        {pageNumbers[0] > 2 && <span style={{margin: "3px"}}>...</span>}
                     </>
                 )}
                 {pageNumbers.map((pageNumber) => (
@@ -142,117 +127,91 @@ export const AllLocations = () => {
                 )}
             </div>}
 
-        <h1>All locations</h1>
+        <h1>All employees</h1>
 
         {loading && <CircularProgress/>}
-        {!loading && locations.length === 0 && <p>No locations found</p>}
-        {!loading && locations.length > 0 && <Container sx={{position: "absolute", left: 930, top: 140}}>
-            <form onSubmit={LocationFilterByCity}>
+        {!loading && employees.length === 0 && <p>No employees found</p>}
+        {!loading && <IconButton component={Link} sx={{mr: 3}} to={`/employees/add`}>
+            <Tooltip title="Add a new employee" arrow>
+                <AddIcon color="inherit"/>
+            </Tooltip>
+        </IconButton>}
+        {!loading && <Button
+            variant="contained"
+            component={Link}
+            sx={{mr: 3, position: "absolute", top: 165, left: 500, background: "#571236", fontSize: 10}}
+            to={`/employees/by-avg-event-outcome`}>
+            <p>View <i>Employees by average event outcome</i> stat</p>
+        </Button>}
+        {!loading && employees.length > 0 && <Container sx={{position: "absolute", left: 830, top: 160}}>
+            <form onSubmit={EmployeeFilterBySalary}>
                 <TextField
                     id="filter"
-                    label="Filter by city"
+                    label="Filter by salary bigger than..."
                     variant="outlined"
-                    sx={{mb: 2}}
-                    onChange={(event) => setCityToFilter(event.target.value)}
+                    sx={{mb: 2, width: 300}}
+                    onChange={(event) => setSalaryToFilter(Number(event.target.value))}
                 />
-                <IconButton component={Link} sx={{mr: 3}} to={`/locations/in-city/${cityToFilter}`}>
-                    <Tooltip title="Filter by city" arrow>
+                <IconButton component={Link} sx={{mr: 3}} to={`/employees/salary-bigger-than/${salaryToFilter}`}>
+                    <Tooltip title="Filter by salary" arrow>
                         <SearchIcon color="inherit"/>
                     </Tooltip>
                 </IconButton>
             </form>
         </Container>}
-        {!loading && <IconButton component={Link} sx={{mr: 3}} to={`/locations/add`}>
-            <Tooltip title="Add a new location" arrow>
-                <AddIcon color="inherit"/>
-            </Tooltip>
-        </IconButton>}
-        {!loading && locations.length > 0 && <TableContainer component={Paper}>
+        {!loading && employees.length > 0 && <TableContainer component={Paper}>
             <Table sx={{minWidth: 650}} aria-label="simple table">
                 <TableHead>
                     <TableRow>
                         <TableCell align="left">#</TableCell>
                         <TableCell align="left">
-                            Street
-                            <IconButton onClick={() => {
-                                sortLocations("street");
-                            }}>
-                                <Tooltip title="Sort by street" arrow>
-                                    <SortTwoToneIcon color="inherit"/>
-                                </Tooltip>
-                            </IconButton>
+                            Name
                         </TableCell>
                         <TableCell align="left">
-                            Number
-                            <IconButton onClick={() => {
-                                sortLocations("number");
-                            }}>
-                                <Tooltip title="Sort by number" arrow>
-                                    <SortTwoToneIcon color="inherit"/>
-                                </Tooltip>
-                            </IconButton>
+                            Job
                         </TableCell>
                         <TableCell align="left">
-                            City
-                            <IconButton onClick={() => {
-                                sortLocations("city");
-                            }}>
-                                <Tooltip title="Sort by city" arrow>
-                                    <SortTwoToneIcon color="inherit"/>
-                                </Tooltip>
-                            </IconButton>
+                            Hire date
                         </TableCell>
                         <TableCell align="left">
-                            Building name
-                            <IconButton onClick={() => {
-                                sortLocations("building_name");
-                            }}>
-                                <Tooltip title="Sort by building name" arrow>
-                                    <SortTwoToneIcon color="inherit"/>
-                                </Tooltip>
-                            </IconButton>
+                            Salary
                         </TableCell>
                         <TableCell align="left">
-                            Details
-                            <IconButton onClick={() => {
-                                sortLocations("details");
-                            }}>
-                                <Tooltip title="Sort by details" arrow>
-                                    <SortTwoToneIcon color="inherit"/>
-                                </Tooltip>
-                            </IconButton>
+                            On leave
                         </TableCell>
-                        <TableCell align="left">Number of events</TableCell>
+                        <TableCell align="left">
+                            Number of events assigned
+                        </TableCell>
                         <TableCell align="center">Operations</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {locations.map((location, index) => <TableRow key={location.id}>
+                    {employees.map((employee, index) => <TableRow key={employee.id}>
                         <TableCell component="th" scope="row">
                             {index + 1}
                         </TableCell>
-                        <TableCell align="left">{location.street}</TableCell>
-                        <TableCell align="left">{location.number}</TableCell>
-                        <TableCell align="left">{location.city}</TableCell>
-                        <TableCell align="left">{location.building_name}</TableCell>
-                        <TableCell align="left">{location.details}</TableCell>
-                        <TableCell align="left">{location.events == undefined ? 0 : location.events.length}</TableCell>
+                        <TableCell align="left">{employee.name}</TableCell>
+                        <TableCell align="left">{employee.job}</TableCell>
+                        <TableCell align="left">{employee.hire_date}</TableCell>
+                        <TableCell align="left">{employee.salary}</TableCell>
+                        <TableCell align="left">{String(employee.on_leave)}</TableCell>
+                        <TableCell align="left">{employee.events == undefined ? 0 : employee.events.length}</TableCell>
                         <TableCell align="right">
                             <IconButton
                                 component={Link}
                                 sx={{mr: 3}}
-                                to={`/locations/${location.id}/details`}>
-                                <Tooltip title="View location details" arrow>
+                                to={`/employees/${employee.id}/details`}>
+                                <Tooltip title="View employee details" arrow>
                                     <ReadMoreIcon color="primary"/>
                                 </Tooltip>
                             </IconButton>
 
-                            <IconButton component={Link} sx={{mr: 3}} to={`/locations/${location.id}/edit`}>
+                            <IconButton component={Link} sx={{mr: 3}} to={`/employees/${employee.id}/edit`}>
                                 <EditIcon/>
                             </IconButton>
 
                             <IconButton component={Link} sx={{mr: 3}}
-                                        to={`/locations/${location.id}/delete`}>
+                                        to={`/employees/${employee.id}/delete`}>
                                 <DeleteForeverIcon sx={{color: "red"}}/>
                             </IconButton>
                         </TableCell>
